@@ -11,20 +11,23 @@ const axios = require('axios').default;
 class App extends React.Component {
     state = {
         valueSeach: '',
-        images: ['suka','suka'],
+        images: [],
         numPages: 1,
         srcImg: '',
-        isLoading: false
+        isLoading: true
     }
     componentDidMount() {
         document.addEventListener("keydown", this.closeModalEsc.bind(this))
     }
+    componentWillUnmount() {
+        document.removeEventListener('keydown', this.closeModalEsc.bind(this))
+        console.log('unmounted')
+    }
     shouldComponentUpdate(nextProps, nextState) {
-       this.render()
+    ReactDOM.render(<>{nextState.isLoading !== false ? <BtnClick btnfoto={this.btnfoto} /> : <Loader type="ThreeDots" color="#00BFFF" height={80} width={80} timeout={3000}/>}</>, document.getElementById('Buttoncon'))
     return ReactDOM.render(<Modal src={nextState.srcImg} alt={'Потом'} closeModal={this.closeModal} />, document.getElementById('root2'))
     }
     btnHidden = () => {
-        const imageList = document.getElementById('ImageGallery');
         if (this.state.isLoading !== true) {
             ReactDOM.render(<Loader type="ThreeDots" color="#00BFFF" height={80} width={80} timeout={3000}/>, document.querySelector('.Buttoncon'));
             return
@@ -57,13 +60,13 @@ class App extends React.Component {
         setTimeout(() => {
             ReactDOM.render(<ImageGalleryItem imagesItem={images} />, document.getElementById('ImageGallery'));
             
-            if (this.state.isLoading !== true) {
-            ReactDOM.render(<BtnClick btnfoto={this.btnfoto}/>,document.getElementById('Buttoncon'));
+        //     if (this.state.isLoading !== true) {
+        //     ReactDOM.render(<BtnClick btnfoto={this.btnfoto}/>,document.getElementById('Buttoncon'));
             
-        } else {
-            ReactDOM.render(<Loader type="ThreeDots" color="#00BFFF" height={80} width={80} timeout={3000}/>, document.querySelector('.Buttoncon'));
+        // } else {
+        //     ReactDOM.render(<Loader type="ThreeDots" color="#00BFFF" height={80} width={80} timeout={3000}/>, document.querySelector('.Buttoncon'));
             
-        }
+        // }
         }, 700)
             // ReactDOM.render(<BtnClick btnfoto={this.btnfoto}/>,document.getElementById('Buttoncon'))
     }
@@ -79,7 +82,9 @@ class App extends React.Component {
         }, 1500)
     }
     fetchImg = () => {
-        this.state.isLoading = true
+        this.setState({
+            isLoading: false
+        })
         const images = `https://pixabay.com/api/?q=${this.state.valueSeach}&page=${this.state.numPages}&key=22641251-454133ad8981e71bbc25a7aae&image_type=photo&orientation=horizontal&per_page=12`;
         axios.get(images).then(response => {
             this.state.images.push(...response.data.hits)
@@ -87,7 +92,7 @@ class App extends React.Component {
             this.setState({
                 numPages: this.state.numPages + 1
             })
-        }).finally(() => this.state.isLoading = false)
+        }).finally(() => this.setState({isLoading: true}))
         return this.state.images
     }
     modal = (src) => {
@@ -107,7 +112,6 @@ class App extends React.Component {
        
     }
     closeModal = (evn) => {
-        console.dir(evn)
         if (evn.target.className !== "Overlay") {
             return
         }
