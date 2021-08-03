@@ -29,7 +29,7 @@ class App extends React.Component {
     }
     btnHidden = () => {
         if (this.state.isLoading !== true) {
-            ReactDOM.render(<Loader type="ThreeDots" color="#00BFFF" height={80} width={80} timeout={3000}/>, document.querySelector('.Buttoncon'));
+            ReactDOM.render(<Loader type="ThreeDots" color="#00BFFF" height={80} width={80} timeout={10000}/>, document.querySelector('.Buttoncon'));
             return
         }
         ReactDOM.render(<button className='Button' type="button" onClick={this.btnfoto}>Еще</button>, document.querySelector('.Buttoncon'));
@@ -37,7 +37,6 @@ class App extends React.Component {
 
 
     onSubmit = (event) => {
-        console.log(this.state.valueSeach === '')
         if (this.state.valueSeach === event.target.children[1].value || event.target.children[1].value === '') {
             event.preventDefault();
             
