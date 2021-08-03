@@ -3,43 +3,56 @@ import ReactDOM from 'react-dom';
 import Searchbar from '../Searchbar/Searchbar';
 import ImageGalleryItem from '../ImageGalleryItem/ImageGalleryItem'
 import ImageGallery from '../ImageGallery/ImageGallery';
+import Modal from '../Modal/Modal'
 const axios = require('axios').default;
 
 class App extends React.Component {
     state = {
         valueSeach: '',
         images: [],
-        numPages: 1
-    };
+        numPages: 1,
+        srcImg: ''
+    }
+    shouldComponentUpdate(nextProps, nextState) {
+    return ReactDOM.render(<Modal src={nextState.srcImg} alt={'Потом'} closeModal={this.closeModal}/>, document.getElementById('root2'))
+    }
+
+
+
     onSubmit = (event) => {
-        this.setState({
-            numPages: 1,
-        })
+        console.log(this.state.valueSeach === '')
         if (this.state.valueSeach === event.target.children[1].value || event.target.children[1].value === '') {
             event.preventDefault();
+            
         } else {
             event.preventDefault();
-        this.setState({
-            images: [],
-            numPages: 1
-        })
-        console.log(this.state.numPages)
-        this.setState({
-            valueSeach: event.target.children[1].value
-        })
-        setTimeout(() => {
-            this.renderElem()
-        },300)
+            this.setState({
+                images: [],
+                numPages: 1
+            })
+            this.setState({
+                valueSeach: event.target.children[1].value
+            })
+            setTimeout(() => {
+                this.renderElem()
+            }, 300)
         }
     }
     renderElem = () => {
         const images = this.fetchImg()
         setTimeout(() => {
-            ReactDOM.render(<ImageGalleryItem imagesItem={images}/>, document.getElementById('ImageGallery'))
-        },700)
+            ReactDOM.render(<ImageGalleryItem imagesItem={images} />, document.getElementById('ImageGallery'))
+        }, 700)
     }
     btnfoto = () => {
         this.renderElem()
+        setTimeout(() => {
+            window.scrollTo({
+                top: document.documentElement.scrollHeight,
+                behavior: 'smooth',
+            });
+
+        }, 1500)
     }
     fetchImg = () => {
 
@@ -47,18 +60,47 @@ class App extends React.Component {
         axios.get(images).then(response => {
             this.state.images.push(...response.data.hits)
         }).then(() => {
-                this.setState({
-            numPages: this.state.numPages + 1
+            this.setState({
+                numPages: this.state.numPages + 1
             })
         })
         return this.state.images
+    }
+    modal = (src) => {
+        if (src.target.nodeName !== "IMG") {
+            return
+        }
+        // const images = src.target.id;
+        const modal = document.querySelector('.Overlay')
+        if (modal.classList.contains) {
+            modal.classList.remove('isHidden')
+            this.setState({
+                srcImg: src.target.id
+            })
+            
+       } 
+        
+       
+    }
+    closeModal = (evn) => {
+        if (evn.target.className !== "Overlay") {
+            return
+        }
+        const modal = document.querySelector('.Overlay')
+        if (modal.classList.contains) {
+            modal.classList.add('isHidden')
+        }
     }
     render() {
         return (
             <>
             <Searchbar onSubmit={this.onSubmit} />
-                <ImageGallery></ImageGallery>
-                <button type="button" onClick={this.btnfoto}>Еще</button>
+                <ImageGallery modal={this.modal}>
+                </ImageGallery>
+                <div id="root2">  <Modal alt={'Потом'} closeModal={this.closeModal} /></div>
+                 <div className='Buttoncon'>
+                    {this.state.images.length ? <button className='Button' type="button" onClick={this.btnfoto}>Еще</button>: <p></p>}
+                    </div>
             </>
         )
     } 

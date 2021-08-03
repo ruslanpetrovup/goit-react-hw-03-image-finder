@@ -1,8 +1,8 @@
 import React from 'react';
 
-const ImageGallery = ({ children }) => {
+const ImageGallery = ({ children,modal }) => {
     return (
-            <ul className="ImageGallery" id="ImageGallery">
+            <ul className="ImageGallery" id="ImageGallery" onClick={modal}>
                 {children}
             </ul>
         )
