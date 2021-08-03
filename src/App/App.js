@@ -3,20 +3,34 @@ import ReactDOM from 'react-dom';
 import Searchbar from '../Searchbar/Searchbar';
 import ImageGalleryItem from '../ImageGalleryItem/ImageGalleryItem'
 import ImageGallery from '../ImageGallery/ImageGallery';
-import Modal from '../Modal/Modal'
+import Modal from '../Modal/Modal';
+import Loader from "react-loader-spinner";
+import BtnClick from '../BtnClick/BtnClick'
 const axios = require('axios').default;
 
 class App extends React.Component {
     state = {
         valueSeach: '',
-        images: [],
+        images: ['suka','suka'],
         numPages: 1,
-        srcImg: ''
+        srcImg: '',
+        isLoading: false
+    }
+    componentDidMount() {
+        document.addEventListener("keydown", this.closeModalEsc.bind(this))
     }
     shouldComponentUpdate(nextProps, nextState) {
-    return ReactDOM.render(<Modal src={nextState.srcImg} alt={'Потом'} closeModal={this.closeModal}/>, document.getElementById('root2'))
+       this.render()
+    return ReactDOM.render(<Modal src={nextState.srcImg} alt={'Потом'} closeModal={this.closeModal} />, document.getElementById('root2'))
     }
-
+    btnHidden = () => {
+        const imageList = document.getElementById('ImageGallery');
+        if (this.state.isLoading !== true) {
+            ReactDOM.render(<Loader type="ThreeDots" color="#00BFFF" height={80} width={80} timeout={3000}/>, document.querySelector('.Buttoncon'));
+            return
+        }
+        ReactDOM.render(<button className='Button' type="button" onClick={this.btnfoto}>Еще</button>, document.querySelector('.Buttoncon'));
+    }
 
 
     onSubmit = (event) => {
@@ -41,9 +55,19 @@ class App extends React.Component {
     renderElem = () => {
         const images = this.fetchImg()
         setTimeout(() => {
-            ReactDOM.render(<ImageGalleryItem imagesItem={images} />, document.getElementById('ImageGallery'))
+            ReactDOM.render(<ImageGalleryItem imagesItem={images} />, document.getElementById('ImageGallery'));
+            
+            if (this.state.isLoading !== true) {
+            ReactDOM.render(<BtnClick btnfoto={this.btnfoto}/>,document.getElementById('Buttoncon'));
+            
+        } else {
+            ReactDOM.render(<Loader type="ThreeDots" color="#00BFFF" height={80} width={80} timeout={3000}/>, document.querySelector('.Buttoncon'));
+            
+        }
         }, 700)
+            // ReactDOM.render(<BtnClick btnfoto={this.btnfoto}/>,document.getElementById('Buttoncon'))
     }
+
     btnfoto = () => {
         this.renderElem()
         setTimeout(() => {
@@ -55,7 +79,7 @@ class App extends React.Component {
         }, 1500)
     }
     fetchImg = () => {
-
+        this.state.isLoading = true
         const images = `https://pixabay.com/api/?q=${this.state.valueSeach}&page=${this.state.numPages}&key=22641251-454133ad8981e71bbc25a7aae&image_type=photo&orientation=horizontal&per_page=12`;
         axios.get(images).then(response => {
             this.state.images.push(...response.data.hits)
@@ -63,7 +87,7 @@ class App extends React.Component {
             this.setState({
                 numPages: this.state.numPages + 1
             })
-        })
+        }).finally(() => this.state.isLoading = false)
         return this.state.images
     }
     modal = (src) => {
@@ -83,7 +107,17 @@ class App extends React.Component {
        
     }
     closeModal = (evn) => {
+        console.dir(evn)
         if (evn.target.className !== "Overlay") {
+            return
+        }
+        const modal = document.querySelector('.Overlay')
+        if (modal.classList.contains) {
+            modal.classList.add('isHidden')
+        }
+    }
+    closeModalEsc = (evn) => {
+        if (evn.code !== "Escape") {
             return
         }
         const modal = document.querySelector('.Overlay')
@@ -95,12 +129,10 @@ class App extends React.Component {
         return (
             <>
             <Searchbar onSubmit={this.onSubmit} />
-                <ImageGallery modal={this.modal}>
-                </ImageGallery>
-                <div id="root2">  <Modal alt={'Потом'} closeModal={this.closeModal} /></div>
-                 <div className='Buttoncon'>
-                    {this.state.images.length ? <button className='Button' type="button" onClick={this.btnfoto}>Еще</button>: <p></p>}
-                    </div>
+                <ImageGallery modal={this.modal} />
+
+                <div id="root2">  <Modal alt={'Потом'} closeModal={this.closeModal} closeModalEsc={this.closeModal} /></div>
+                <div className='Buttoncon' id="Buttoncon"></div>
             </>
         )
     } 
